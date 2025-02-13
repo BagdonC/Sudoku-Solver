@@ -8,13 +8,15 @@ namespace Sudoku_Solver.Logic
 {
     class Solver
     {
-        public Solver()
-        {
+        private static int[,] Mat;
 
+        public Solver(int[,] mat)
+        {
+            Mat = mat;
         }
 
         // Function to check if it is safe to place num at mat[row, col]
-        static bool isSafe(int[,] mat, int i, int j, int num,
+        static bool isSafe(int i, int j, int num,
                                int[] row, int[] col, int[] box)
         {
 
@@ -25,10 +27,10 @@ namespace Sudoku_Solver.Logic
             return true;
         }
 
-        static bool sudokuSolverRec(int[,] mat, int i, int j,
+        static bool sudokuSolverRec(int i, int j,
                                     int[] row, int[] col, int[] box)
         {
-            int n = mat.GetLength(0);
+            int n = Mat.GetLength(0);
 
             // base case: Reached nth column of last row
             if (i == n - 1 && j == n)
@@ -42,27 +44,27 @@ namespace Sudoku_Solver.Logic
             }
 
             // If cell is already occupied, then move forward
-            if (mat[i, j] != 0)
-                return sudokuSolverRec(mat, i, j + 1, row, col, box);
+            if (Solver.Mat[i, j] != 0)
+                return sudokuSolverRec(i, j + 1, row, col, box);
 
             for (int num = 1; num <= n; num++)
             {
 
                 // If it is safe to place num at current position
-                if (isSafe(mat, i, j, num, row, col, box))
+                if (isSafe(i, j, num, row, col, box))
                 {
-                    mat[i, j] = num;
+                    Mat[i, j] = num;
 
                     // Update masks for the corresponding row, column, and box
-                    row[i] |= (1 << num);
-                    col[j] |= (1 << num);
-                    box[i / 3 * 3 + j / 3] |= (1 << num);
+                    row[i] |= 1 << num;
+                    col[j] |= 1 << num;
+                    box[(i / 3 * 3) + (j / 3)] |= 1 << num;
 
-                    if (sudokuSolverRec(mat, i, j + 1, row, col, box))
+                    if (sudokuSolverRec(i, j + 1, row, col, box))
                         return true;
 
                     // Unmask the number num in the corresponding row, column and box masks
-                    mat[i, j] = 0;
+                    Mat[i, j] = 0;
                     row[i] &= ~(1 << num);
                     col[j] &= ~(1 << num);
                     box[i / 3 * 3 + j / 3] &= ~(1 << num);
@@ -72,9 +74,9 @@ namespace Sudoku_Solver.Logic
             return false;
         }
 
-        static void solveSudoku(int[,] mat)
+        static void solveSudoku()
         {
-            int n = mat.GetLength(0);
+            int n = Mat.GetLength(0);
             int[] row = new int[n];
             int[] col = new int[n];
             int[] box = new int[n];
@@ -84,40 +86,18 @@ namespace Sudoku_Solver.Logic
             {
                 for (int j = 0; j < n; j++)
                 {
-                    if (mat[i, j] != 0)
+                    if (Mat[i, j] != 0)
                     {
-                        row[i] |= (1 << mat[i, j]);
-                        col[j] |= (1 << mat[i, j]);
-                        box[(i / 3) * 3 + j / 3] |= (1 << mat[i, j]);
+                        row[i] |= 1 << Mat[i, j];
+                        col[j] |= 1 << Mat[i, j];
+                        box[(i / 3 * 3) + (j / 3)] |= 1 << Mat[i, j];
                     }
                 }
             }
 
-            sudokuSolverRec(mat, 0, 0, row, col, box);
+            sudokuSolverRec(0, 0, row, col, box);
         }
 
-        public static void Main(string[] args)
-        {
-            int[,] mat = {
-            {3, 0, 6, 5, 0, 8, 4, 0, 0},
-            {5, 2, 0, 0, 0, 0, 0, 0, 0},
-            {0, 8, 7, 0, 0, 0, 0, 3, 1},
-            {0, 0, 3, 0, 1, 0, 0, 8, 0},
-            {9, 0, 0, 8, 6, 3, 0, 0, 5},
-            {0, 5, 0, 0, 9, 0, 6, 0, 0},
-            {1, 3, 0, 0, 0, 0, 2, 5, 0},
-            {0, 0, 0, 0, 0, 0, 0, 7, 4},
-            {0, 0, 5, 2, 0, 6, 3, 0, 0}
-        };
-
-            solveSudoku(mat);
-
-            for (int i = 0; i < mat.GetLength(0); i++)
-            {
-                for (int j = 0; j < mat.GetLength(1); j++)
-                    Console.Write(mat[i, j] + " ");
-                Console.WriteLine();
-            }
-        }
+        public static void Main(string[] args) => solveSudoku();
     }
 }
